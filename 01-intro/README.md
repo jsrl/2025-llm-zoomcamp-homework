@@ -139,9 +139,44 @@ This time we are only interested in questions from `machine-learning-zoomcamp`.
 Return 3 results. What's the 3rd question returned by the search engine?
 
 * How do I debug a docker container?
-* How do I copy files from a different folder into docker container’s working directory?
+* **-->How do I copy files from a different folder into docker container’s working directory?**
 * How do Lambda container images work?
 * How can I annotate a graph?
+
+```python
+query= 'How do copy a file to a Docker container?'
+def elastic_search(query):
+    search_query = {
+        "size": 3,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                },
+                "filter": {
+                    "term": {
+                        "course": "machine-learning-zoomcamp"
+                    }
+                }
+            }
+        }
+    }
+
+    response = es_client.search(index=index_name, body=search_query)
+    
+    result_docs = []
+    
+    for hit in response['hits']['hits']:
+        result_docs.append(hit['_source'])
+    
+    return result_docs
+elastic_search(query)
+```
+**'question': 'How do I copy files from a different folder into docker container’s working directory?',**
 
 ## Q5. Building a prompt
 
