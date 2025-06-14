@@ -15,6 +15,18 @@ curl localhost:9200
 
 What's the `version.build_hash` value?
 
+docker run -it \
+    --rm \
+    --name elasticsearch \
+    -m 4GB \
+    -p 9200:9200 \
+    -p 9300:9300 \
+    -e "discovery.type=single-node" \
+    -e "xpack.security.enabled=false" \
+    docker.elastic.co/elasticsearch/elasticsearch:8.17.6
+
+**--> "build_hash" : "dbcbbbd0bc4924cfeb28929dc05d82d662c527b7"**
+
 
 ## Getting the data
 
@@ -56,9 +68,14 @@ pip install elasticsearch
 Which function do you use for adding your data to elastic?
 
 * `insert`
-* `index`
+* **-->`index`**
 * `put`
 * `add`
+
+```python
+for doc in tqdm(documents):
+    es_client.index(index=index_name, document=doc)
+```
 
 ## Q3. Searching
 
@@ -72,10 +89,46 @@ What's the score for the top ranking result?
 
 * 84.50
 * 64.50
-* 44.50
+* **-->44.50**
 * 24.50
 
 Look at the `_score` field.
+
+```python
+query = 'How do execute a command on a Kubernetes pod?'
+def elastic_search(query):
+    search_query = {
+        "size": 1,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                },
+            }
+        }
+    }
+
+    response = es_client.search(index=index_name, body=search_query)
+    
+    result_docs = []
+    
+    for hit in response['hits']['hits']:
+        result_docs.append(hit['_source'])
+
+    # Print first result score
+    if response['hits']['hits']:
+        top_score = response['hits']['hits'][0]['_score']
+        print(f"Top result score: {top_score}")
+    
+    return result_docs
+
+elastic_search(query)
+```
+**Top result score: 44.50556**
 
 ## Q4. Filtering
 
@@ -86,9 +139,44 @@ This time we are only interested in questions from `machine-learning-zoomcamp`.
 Return 3 results. What's the 3rd question returned by the search engine?
 
 * How do I debug a docker container?
-* How do I copy files from a different folder into docker container’s working directory?
+* **-->How do I copy files from a different folder into docker container’s working directory?**
 * How do Lambda container images work?
 * How can I annotate a graph?
+
+```python
+query= 'How do copy a file to a Docker container?'
+def elastic_search(query):
+    search_query = {
+        "size": 3,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                },
+                "filter": {
+                    "term": {
+                        "course": "machine-learning-zoomcamp"
+                    }
+                }
+            }
+        }
+    }
+
+    response = es_client.search(index=index_name, body=search_query)
+    
+    result_docs = []
+    
+    for hit in response['hits']['hits']:
+        result_docs.append(hit['_source'])
+    
+    return result_docs
+elastic_search(query)
+```
+**'question': 'How do I copy files from a different folder into docker container’s working directory?',**
 
 ## Q5. Building a prompt
 
@@ -120,9 +208,39 @@ CONTEXT:
 What's the length of the resulting prompt? (use the `len` function)
 
 * 946
-* 1446
+* **->1446**
 * 1946
 * 2446
+
+```python
+def build_prompt(query, search_results):
+    prompt_template = """
+You're a course teaching assistant. Answer the QUESTION based on the CONTEXT from the FAQ database.
+Use only the facts from the CONTEXT when answering the QUESTION.
+
+QUESTION: {question}
+
+CONTEXT:
+{context}
+""".strip()
+
+    context_template = """
+Q: {question}
+A: {text}
+""".strip()
+
+    context = ""
+    
+    for doc in search_results:
+        context += context_template.format(question=doc['question'], text=doc['text']) + "\n\n"
+    
+    prompt = prompt_template.format(question=query, context=context).strip()
+    return prompt
+search_results = elastic_search(query)
+question = 'How do I execute a command in a running docker container?'
+len(build_prompt(question, search_results))
+```
+**1462**
 
 ## Q6. Tokens
 
@@ -145,7 +263,7 @@ Use the `encode` function. How many tokens does our prompt have?
 
 * 120
 * 220
-* 320
+* **->320**
 * 420
 
 Note: to decode back a token into a word, you can use the `decode_single_token_bytes` function:
@@ -153,6 +271,16 @@ Note: to decode back a token into a word, you can use the `decode_single_token_b
 ```python
 encoding.decode_single_token_bytes(63842)
 ```
+
+```python
+import tiktoken
+
+prompt = build_prompt(question, search_results)
+encoding = tiktoken.encoding_for_model("gpt-4o")
+tokens = encoding.encode(prompt)
+print(len(tokens))
+```
+**322**
 
 ## Submit the results
 
