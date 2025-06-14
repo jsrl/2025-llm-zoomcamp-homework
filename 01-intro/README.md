@@ -208,9 +208,39 @@ CONTEXT:
 What's the length of the resulting prompt? (use the `len` function)
 
 * 946
-* 1446
+* **->1446**
 * 1946
 * 2446
+
+```python
+def build_prompt(query, search_results):
+    prompt_template = """
+You're a course teaching assistant. Answer the QUESTION based on the CONTEXT from the FAQ database.
+Use only the facts from the CONTEXT when answering the QUESTION.
+
+QUESTION: {question}
+
+CONTEXT:
+{context}
+""".strip()
+
+    context_template = """
+Q: {question}
+A: {text}
+""".strip()
+
+    context = ""
+    
+    for doc in search_results:
+        context += context_template.format(question=doc['question'], text=doc['text']) + "\n\n"
+    
+    prompt = prompt_template.format(question=query, context=context).strip()
+    return prompt
+search_results = elastic_search(query)
+question = 'How do I execute a command in a running docker container?'
+len(build_prompt(question, search_results))
+```
+**1462**
 
 ## Q6. Tokens
 
