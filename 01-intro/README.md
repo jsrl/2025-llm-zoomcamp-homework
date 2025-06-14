@@ -68,9 +68,14 @@ pip install elasticsearch
 Which function do you use for adding your data to elastic?
 
 * `insert`
-* `index`
+* **-->`index`**
 * `put`
 * `add`
+
+```python
+for doc in tqdm(documents):
+    es_client.index(index=index_name, document=doc)
+```
 
 ## Q3. Searching
 
