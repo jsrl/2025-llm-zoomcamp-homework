@@ -89,10 +89,46 @@ What's the score for the top ranking result?
 
 * 84.50
 * 64.50
-* 44.50
+* **-->44.50**
 * 24.50
 
 Look at the `_score` field.
+
+```python
+query = 'How do execute a command on a Kubernetes pod?'
+def elastic_search(query):
+    search_query = {
+        "size": 1,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                },
+            }
+        }
+    }
+
+    response = es_client.search(index=index_name, body=search_query)
+    
+    result_docs = []
+    
+    for hit in response['hits']['hits']:
+        result_docs.append(hit['_source'])
+
+    # Print first result score
+    if response['hits']['hits']:
+        top_score = response['hits']['hits'][0]['_score']
+        print(f"Top result score: {top_score}")
+    
+    return result_docs
+
+elastic_search(query)
+```
+**Top result score: 44.50556**
 
 ## Q4. Filtering
 
