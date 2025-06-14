@@ -190,8 +190,7 @@ A: {text}
 """.strip()
 ```
 
-Now use the context you just created along with the "How do I execute a command in a running docker container?" question 
-to construct a prompt using the template below:
+Now use the context you just created along with the "How do copy a file to a Docker container?" question to construct a prompt using the template below:
 
 ```
 prompt_template = """
@@ -240,7 +239,7 @@ search_results = elastic_search(query)
 question = 'How do I execute a command in a running docker container?'
 len(build_prompt(question, search_results))
 ```
-**1462**
+**1446**
 
 ## Q6. Tokens
 
@@ -280,7 +279,7 @@ encoding = tiktoken.encoding_for_model("gpt-4o")
 tokens = encoding.encode(prompt)
 print(len(tokens))
 ```
-**322**
+**320**
 
 ## Submit the results
 
