@@ -263,7 +263,7 @@ Use the `encode` function. How many tokens does our prompt have?
 
 * 120
 * 220
-* 320
+* **->320**
 * 420
 
 Note: to decode back a token into a word, you can use the `decode_single_token_bytes` function:
@@ -271,6 +271,16 @@ Note: to decode back a token into a word, you can use the `decode_single_token_b
 ```python
 encoding.decode_single_token_bytes(63842)
 ```
+
+```python
+import tiktoken
+
+prompt = build_prompt(question, search_results)
+encoding = tiktoken.encoding_for_model("gpt-4o")
+tokens = encoding.encode(prompt)
+print(len(tokens))
+```
+**322**
 
 ## Bonus: generating the answer (ungraded)
 
