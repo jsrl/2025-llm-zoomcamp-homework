@@ -186,7 +186,7 @@ What's the MRR?
 - 0.65
 - 0.75
 - 0.85
-- 0.95
+- **->0.95**
 
 ## Q5. Cosine simiarity
 
