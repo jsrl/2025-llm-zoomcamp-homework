@@ -272,7 +272,7 @@ What's the average cosine?
 
 - 0.64
 - 0.74
-- 0.84
+- **->0.84**
 - 0.94
 
 This is how you do it:
@@ -324,7 +324,7 @@ What's the average Rouge-1 F1?
 
 - 0.25
 - 0.35
-- 0.45
+- **->0.45**
 - 0.55
 
 
